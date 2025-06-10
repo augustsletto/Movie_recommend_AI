@@ -5,12 +5,11 @@ import random
 import re
 import pickle
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 from dotenv import load_dotenv
 import os
 
+# laddar in tränade AI-modeller och data
 vectorizer = pickle.load(open("models/vectorizer_west.pkl", "rb"))
 knn_model = pickle.load(open("models/knn_model_west.pkl", "rb"))
 df = pd.read_pickle("models/netflix_data_west.pkl")
@@ -20,9 +19,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
 Bootstrap5(app)
-
 OMDB_API_KEY = os.getenv("OMDB_API_KEY")
 
+# Populära filmer vid dålig knn-match
 POPULAR_MOVIES = [
     'Avengers: Infinity War', 'Mystery Lab', 'Click', 'Dallas Buyers Club', 'Grown Ups',
     'Thomas & Friends: Marvelous Machinery: World of Tomorrow', 'LEGO Marvel Super Heroes: Black Panther',
@@ -33,24 +32,25 @@ POPULAR_MOVIES = [
     "The Matrix", "Interstellar", "Parasite"
 ]
 
+# simpel text-preprocessor som gör små bokstäver och tar bort specialtecken
 def preprocess_query(text):
     text = text.lower()
     text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
     return text
 
 
-
+# Tar user-query och returnerar top_n rekommenderade filmer
 def recommend_movies(user_query, top_n=5):
-    query_vector = vectorizer.transform([user_query])
-    distances, indices = knn_model.kneighbors(query_vector, n_neighbors=top_n)
+    query_vector = vectorizer.transform([user_query]) # Vektoriserar texten
+    distances, indices = knn_model.kneighbors(query_vector, n_neighbors=top_n) # hämtar near neighbors
 
     recommendations = df.iloc[indices[0]].copy()
-    recommendations["similarity"] = 1 - distances[0]  
+    recommendations["similarity"] = 1 - distances[0]  # omvandlar distans till likhet
     return recommendations[["title", "similarity"]]
 
 
 
-
+# APIar OMDb för filmrekommendationers poster
 def get_movie_poster(title, api_key):
     url = f"http://www.omdbapi.com/?t={title}&apikey={api_key}"
     try:
@@ -61,10 +61,10 @@ def get_movie_poster(title, api_key):
 
         data = response.json()
         if data.get('Response') == 'True' and data.get('Poster') != 'N/A':
-            return data.get('Poster')
+            return data.get('Poster') 
         else:
             print(f"OMDb: No poster found for '{title}'")
-            return "/static/content/default.png"
+            return "/static/content/default.png" # Fallback bild om poster inte hittas
 
     except Exception as e:
         print(f"Error fetching poster for '{title}': {e}")
@@ -93,7 +93,7 @@ def home():
                 })
         else:
             
-
+            # Visar riktiga rekommendationer med posters
             for title in recommendations["title"]:
                 poster_url = get_movie_poster(title, OMDB_API_KEY)
                 movie_data.append({
