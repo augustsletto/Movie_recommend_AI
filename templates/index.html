@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}My Top 10 Movies{% endblock %}
+
+{% block content %}
+
+<header class="p-3">
+  <div class="container">
+    <div class="d-flex flex-wrap align-items-center justify-content-between">
+      <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+        <img src="static/content/REELPICKS.png" alt="logo" style="height: 40px;">
+      </a>
+      <ul class="nav mb-2 mb-md-0">
+        <li><a href="#" class="nav-link px-2 text-secondary">Home</a></li>
+        <li><a href="#" class="nav-link px-2 text-white">About</a></li>
+        <li><a href="#" class="nav-link px-2 text-white">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<section class="text-center py-5 text-white">
+  <div class="container">
+    
+    <h1 class="mb-4 display-4 fw-bold" id="headerTitle">What do you feel like watching?</h1>
+
+    
+    <form method="POST" class="d-flex justify-content-center mb-5" role="search">
+      <input name="query" class="form-control bg-dark text-white border-secondary me-2 w-50"
+        type="search" placeholder="Type a movie, genre, actor, or mood..." aria-label="Search" value="{{ user_query }}">
+      <button class="btn btn-danger" type="submit">Search</button>
+    </form>
+
+   
+    <h2 class="mb-4">Recommended for you</h2>
+    {% if message %}
+  <div class="alert alert-info text-white bg-dark border-secondary text-center" role="alert">
+    {{ message }}
+  </div>
+{% endif %}
+
+
+    <div class="row justify-content-center g-4">
+  {% for movie in movie_data %}
+    <div class="col-6 col-sm-4 col-md-3 col-lg-2"> 
+      <div style="width: 100%;">
+        <img src="{{ movie.poster_url }}" class="card-img-top rounded" alt="{{ movie.title }}">
+        <div class="card-body p-2">
+          <p class="card-text text-center text-wrap m-0" style="font-size: 1.2rem;">{{ movie.title }}</p>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+
+  </div>
+</section>
+
+{% endblock %}
